@@ -1,15 +1,21 @@
 // Service worker: app shell em cache, funciona offline.
 // Aumente VERSAO a cada publicação para forçar a atualização.
-const VERSAO = 'tn-v2';
+const VERSAO = 'tn-v4';
 const ARQUIVOS = [
   './', './index.html', './styles.css', './manifest.webmanifest',
   './js/app.js', './js/calc.js', './js/label.js', './js/store.js',
-  './data/seed.js', './data/taco.js',
+  './data/seed.js', './data/taco.js', './data/extras.js',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png',
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(VERSAO).then((c) => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));
+  // cache: 'reload' ignora o cache HTTP do GitHub Pages e baixa a versão nova de verdade.
+  // Sem skipWaiting aqui: o app avisa o usuário e só ativa quando ele tocar em "Atualizar".
+  e.waitUntil(caches.open(VERSAO).then((c) => c.addAll(ARQUIVOS.map((u) => new Request(u, { cache: 'reload' })))));
+});
+
+self.addEventListener('message', (e) => {
+  if (e.data === 'ATIVAR') self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {

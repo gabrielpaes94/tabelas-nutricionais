@@ -100,3 +100,6 @@ input:focus, select:focus { outline: 2px solid var(--acento); outline-offset: 0;
 
 .tab td { vertical-align: top; }
 .tab td:nth-child(n+2) { white-space: nowrap; }
+
+.atualizar { position: fixed; left: 16px; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 40; background: var(--acento); color: #fff; border-radius: 12px; padding: 8px 8px 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 600; }
+.atualizar .mini { background: #fff; color: #111827; border-color: #fff; }
