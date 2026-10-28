@@ -313,7 +313,10 @@ async function copiar(txt) {
 // ---------- seletor de insumos (modal) ----------
 let tacoCache = null;
 async function carregarTaco() {
-  if (!tacoCache) tacoCache = (await import('../data/taco.js')).TACO;
+  if (!tacoCache) {
+    const [t, e] = await Promise.all([import('../data/taco.js'), import('../data/extras.js')]);
+    tacoCache = [...e.EXTRAS, ...t.TACO];
+  }
   return tacoCache;
 }
 
@@ -340,9 +343,9 @@ function abrirPicker(aoEscolher, voltarPara) {
       if (norm(busca.value.trim()) !== q) return; // busca mudou durante o carregamento
       const ja = new Set(S.ings.map((i) => i.id));
       const ach = taco.filter((t) => !ja.has(t.id) && q.split(' ').every((w) => norm(t.nome).includes(w))).slice(0, 40);
-      if (ach.length) res.append(h('h4', {}, 'Tabela TACO'));
+      if (ach.length) res.append(h('h4', {}, 'TACO e outras fontes'));
       ach.forEach((t) => res.append(h('button', { class: 'item', onclick: () => {
-        const novo = store.novoInsumo({ ...t, alergenos: [], unidades: [] });
+        const novo = store.novoInsumo({ alergenos: [], unidades: [], ...t });
         S.ings.push(novo); salvar(); fechar(); toast(`"${t.nome}" adicionado aos seus insumos.`); aoEscolher(novo.id);
       } }, h('span', {}, t.nome), h('small', {}, `${t.grupo} · ${fmt(t.carbo)} g carbo · ${fmt(t.prot)} g prot · ${fmt(t.gord)} g gord`))));
     }
@@ -515,6 +518,34 @@ function viewAjustes() {
 // ---------- inicialização ----------
 render();
 store.pedirPersistencia();
+function avisarAtualizacao(worker) {
+  if (document.querySelector('.atualizar')) return;
+  document.body.append(h('div', { class: 'atualizar' },
+    h('span', {}, 'Nova versão disponível.'),
+    h('button', { class: 'mini', onclick: () => worker.postMessage('ATIVAR') }, 'Atualizar')));
+}
+
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  let controlado = !!navigator.serviceWorker.controller;
+  let recarregando = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!controlado) { controlado = true; return; } // primeira instalação assumindo a página: não recarrega
+    if (recarregando) return;
+    recarregando = true;
+    location.reload();
+  });
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js');
+      if (reg.waiting && navigator.serviceWorker.controller) avisarAtualizacao(reg.waiting);
+      reg.addEventListener('updatefound', () => {
+        const novo = reg.installing;
+        novo.addEventListener('statechange', () => {
+          if (novo.state === 'installed' && navigator.serviceWorker.controller) avisarAtualizacao(novo);
+        });
+      });
+      // procura versão nova sempre que o app volta para a tela
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+    } catch (e) { /* sem service worker: o app continua funcionando online */ }
+  });
 }
