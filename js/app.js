@@ -142,6 +142,7 @@ function viewReceita(id) {
   const paineis = { receita: pnlReceita, tabela: pnlTabela, custo: pnlCusto };
   const infoPeso = h('p', { class: 'nota' });
   const infoSoma = h('p', { class: 'nota' });
+  const infoEmb = h('p', { class: 'nota' });
 
   function persistir() { salvar(); refresh(); }
 
@@ -150,6 +151,7 @@ function viewReceita(id) {
     infoPeso.textContent = `Peso final total: ${fmt(Math.round(num(rec.unidades) * num(rec.pesoUn) * 10) / 10)} g`;
     infoSoma.textContent = `Soma dos ingredientes: ${fmt(Math.round(r.somaG * 10) / 10)} g` +
       (r.somaG > 0 && num(rec.unidades) * num(rec.pesoUn) > 0 ? ` · variação até o peso final: ${fmt(Math.round(r.perdaPct * 10) / 10)}%` : '');
+    infoEmb.textContent = r.porcoes > 0 ? `Porções por embalagem na tabela: ${fmt(Math.round(r.porcoes * 10) / 10)}` : 'Informe a porção e o peso para calcular as porções por embalagem.';
     boxResumo.replaceChildren(
       h('h3', {}, 'Resumo por porção'),
       h('div', { class: 'resumo' }, LINHAS.map((l) => h('div', {}, h('small', {}, l.nome.replace(/ \(.+\)/, '')), h('b', {}, fmt(r.declPorcao[l.key]))))));
@@ -190,6 +192,8 @@ function viewReceita(id) {
       h('div', { class: 'grade2' },
         campoNum('Porção (g ou mL)', rec.porcaoG, (v) => { rec.porcaoG = v; persistir(); }),
         campoTxt('Medida caseira', rec.medida, (v) => { rec.medida = v; salvar(); refresh(); }, { placeholder: 'ex.: 2 fatias' })),
+      campoNum('Peso da embalagem (g ou mL)', rec.pesoEmb, (v) => { rec.pesoEmb = v; persistir(); }, { nulavel: true, placeholder: `vazio = ${fmt(num(rec.pesoUn))} (peso por unidade)` }),
+      infoEmb,
       h('label', { class: 'campo' }, h('span', {}, 'Tipo do alimento'),
         h('select', { onchange: (e) => { rec.liquido = e.target.value === 'l'; persistir(); } },
           h('option', { value: 's', selected: !rec.liquido }, 'Sólido (por 100 g)'),

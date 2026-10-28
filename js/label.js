@@ -55,7 +55,8 @@ export function buildLabelSVG(rec, res, { W, H }) {
   y += V.titulo * u;
   linha(y, f * 0.2);
 
-  const porcoes = res.porcoes > 0 ? fmt(Math.round(res.porcoes * 10) / 10) : '-';
+  const pArred = Math.round(res.porcoes * 10) / 10;
+  const porcoes = res.porcoes > 0 ? (Number.isInteger(pArred) ? fmt(pArred) : `aprox. ${fmt(pArred)}`) : '-';
   txt(xNome, base(V.sub * u), `Porções por embalagem: ${porcoes}`, f);
   y += V.sub * u;
   const medida = rec.medida ? ` (${rec.medida})` : '';

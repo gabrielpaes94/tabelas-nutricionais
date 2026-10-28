@@ -118,7 +118,9 @@ export function calcular(rec, ingMap, opts = {}) {
 
   const pesoFinal = pesoFinalDe(rec, somaG);
   const porcaoG = num(rec.porcaoG);
-  const porcoes = porcaoG > 0 && pesoFinal > 0 ? num(rec.pesoUn) > 0 ? num(rec.pesoUn) / porcaoG : pesoFinal / porcaoG : 0;
+  // Peso da embalagem: campo próprio; se vazio, usa o peso por unidade
+  const pesoEmb = num(rec.pesoEmb) > 0 ? num(rec.pesoEmb) : num(rec.pesoUn);
+  const porcoes = porcaoG > 0 && pesoFinal > 0 ? (pesoEmb > 0 ? pesoEmb / porcaoG : pesoFinal / porcaoG) : 0;
   const per100 = {};
   const perPorcao = {};
   for (const k of [...NUTR, 'energia']) {
