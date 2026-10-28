@@ -1,6 +1,6 @@
 // Service worker: app shell em cache, funciona offline.
 // Aumente VERSAO a cada publicação para forçar a atualização.
-const VERSAO = 'tn-v1';
+const VERSAO = 'tn-v2';
 const ARQUIVOS = [
   './', './index.html', './styles.css', './manifest.webmanifest',
   './js/app.js', './js/calc.js', './js/label.js', './js/store.js',
